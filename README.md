@@ -21,11 +21,12 @@ An AI-native sprint wrap-up assistant that pulls evidence from work artifacts an
 - [`apps/web/README.md`](/Users/gfgu/Documents/Capco%20AI%20Hackathon/apps/web/README.md)
 - [`packages/core/README.md`](/Users/gfgu/Documents/Capco%20AI%20Hackathon/packages/core/README.md)
 - [`workers/README.md`](/Users/gfgu/Documents/Capco%20AI%20Hackathon/workers/README.md)
+- [`notes_collection/README.md`](notes_collection/README.md)
 
 ## Immediate MVP
 
 - Connect GitHub and Microsoft.
-- Ingest commits, PRs, issues, chats, meeting transcripts, and freeform notes for a chosen date range.
+- Ingest commits, PRs, issues, chats, uploaded meeting transcripts, and freeform notes for a chosen date range.
 - Normalize everything into one timeline.
 - Generate markdown recap plus `.pptx`.
 - Add repo onboarding mode as a second workflow using the same evidence pipeline.

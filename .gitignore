@@ -4,6 +4,11 @@ dist
 build
 .env
 .env.local
+notes_collection/.env
+notes_collection/input/*
+!notes_collection/input/
+!notes_collection/input/.gitkeep
+notes_collection/output/
 .DS_Store
 coverage
 *.log
