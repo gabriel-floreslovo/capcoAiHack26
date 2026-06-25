@@ -1,10 +1,14 @@
 {
   "name": "sprint-wrap-up-buddy",
   "private": true,
-  "packageManager": "pnpm@9.0.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "workers/*"
+  ],
   "scripts": {
-    "dev": "echo \"Scaffold apps/web and workers first\"",
-    "build": "echo \"No build configured yet\"",
-    "lint": "echo \"No lint configured yet\""
+    "dev": "npm run dev --workspace @sprint-wrap-up-buddy/web",
+    "build": "npm run build --workspace @sprint-wrap-up-buddy/web",
+    "lint": "npm run lint --workspace @sprint-wrap-up-buddy/web"
   }
 }
