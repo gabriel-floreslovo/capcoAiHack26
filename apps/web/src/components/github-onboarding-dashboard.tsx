@@ -3,9 +3,11 @@
 import { startTransition, useEffect, useMemo, useState } from "react";
 
 import type { GithubRepoOption } from "@/lib/github";
+import type { GithubReportType } from "@/lib/github-reports";
 
 type SummaryResponse = {
   generatedAt: string;
+  reportType: GithubReportType;
   repoFullName: string;
   summary: string;
 };
@@ -38,6 +40,10 @@ export function GithubOnboardingDashboard({
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [loadingRepos, setLoadingRepos] = useState(true);
   const [generatingSummary, setGeneratingSummary] = useState(false);
+
+  const summaryHeading = summary?.reportType === "sprint-summary"
+    ? "Sprint summary preview"
+    : "Onboarding summary preview";
 
   useEffect(() => {
     let cancelled = false;
@@ -87,7 +93,7 @@ export function GithubOnboardingDashboard({
     return manualRepo.trim().length > 0 ? manualRepo.trim() : repoFullName;
   }, [manualRepo, repoFullName]);
 
-  async function handleGenerateSummary() {
+  async function handleGenerateSummary(reportType: GithubReportType) {
     setSummaryError(null);
     setGeneratingSummary(true);
 
@@ -100,6 +106,7 @@ export function GithubOnboardingDashboard({
         body: JSON.stringify({
           endDate,
           notes,
+          reportType,
           repoFullName: effectiveRepo,
           startDate,
         }),
@@ -137,7 +144,9 @@ export function GithubOnboardingDashboard({
     const url = URL.createObjectURL(blob);
     const anchor = document.createElement("a");
     anchor.href = url;
-    anchor.download = `${summary.repoFullName.replace("/", "-")}-onboarding-summary.md`;
+    anchor.download = `${summary.repoFullName.replace("/", "-")}-${
+      summary.reportType
+    }.md`;
     anchor.click();
     URL.revokeObjectURL(url);
   }
@@ -231,6 +240,10 @@ export function GithubOnboardingDashboard({
               placeholder="Paste developer notes, meeting callouts, onboarding hints, or sprint context here."
               value={notes}
             />
+            <p className="mt-2 text-xs leading-6 text-slate-500">
+              Notes are included as input context for report generation, but
+              they are not echoed back verbatim in the markdown output.
+            </p>
           </label>
 
           {(repoError || summaryError) && (
@@ -239,20 +252,38 @@ export function GithubOnboardingDashboard({
             </div>
           )}
 
-          <button
-            className="w-full rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
-            disabled={
-              generatingSummary ||
-              loadingRepos ||
-              effectiveRepo.trim().length === 0 ||
-              startDate.length === 0 ||
-              endDate.length === 0
-            }
-            onClick={handleGenerateSummary}
-            type="button"
-          >
-            {generatingSummary ? "Generating onboarding summary..." : "Generate onboarding summary"}
-          </button>
+          <div className="grid gap-3 sm:grid-cols-2">
+            <button
+              className="w-full rounded-full bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+              disabled={
+                generatingSummary ||
+                loadingRepos ||
+                effectiveRepo.trim().length === 0 ||
+                startDate.length === 0 ||
+                endDate.length === 0
+              }
+              onClick={() => void handleGenerateSummary("onboarding")}
+              type="button"
+            >
+              {generatingSummary
+                ? "Generating report..."
+                : "Generate onboarding summary"}
+            </button>
+            <button
+              className="w-full rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-900 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
+              disabled={
+                generatingSummary ||
+                loadingRepos ||
+                effectiveRepo.trim().length === 0 ||
+                startDate.length === 0 ||
+                endDate.length === 0
+              }
+              onClick={() => void handleGenerateSummary("sprint-summary")}
+              type="button"
+            >
+              {generatingSummary ? "Generating report..." : "Generate sprint summary"}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -263,7 +294,7 @@ export function GithubOnboardingDashboard({
               Markdown output
             </p>
             <h2 className="mt-2 text-2xl font-semibold tracking-tight">
-              Onboarding summary preview
+              {summaryHeading}
             </h2>
           </div>
           <button
@@ -284,13 +315,12 @@ export function GithubOnboardingDashboard({
           ) : (
             <div className="space-y-3 text-sm leading-7 text-slate-400">
               <p>
-                Generate a report to get a repo onboarding brief grounded in the
-                selected GitHub repository, date range, and notes context.
+                Generate a report to get either an onboarding brief or a sprint
+                recap grounded in the selected GitHub repository and date range.
               </p>
               <p>
-                This is the branch where GitHub ingestion first ties into the
-                later notes workflow, so the notes field already feeds directly
-                into the generated output.
+                The notes field is already wired into this workflow as private
+                input context without being copied into the generated markdown.
               </p>
             </div>
           )}

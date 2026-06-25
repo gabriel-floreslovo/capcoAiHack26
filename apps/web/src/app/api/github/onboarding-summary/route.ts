@@ -2,11 +2,16 @@ import { NextResponse } from "next/server";
 
 import { auth } from "@/auth";
 import { getRepoSnapshot } from "@/lib/github";
-import { buildOnboardingMarkdown } from "@/lib/github-onboarding";
+import {
+  buildOnboardingMarkdown,
+  buildSprintSummaryMarkdown,
+  type GithubReportType,
+} from "@/lib/github-reports";
 
 type RequestBody = {
   endDate?: string;
   notes?: string;
+  reportType?: GithubReportType;
   repoFullName?: string;
   startDate?: string;
 };
@@ -30,6 +35,8 @@ export async function POST(request: Request) {
   const startDate = body.startDate?.trim() ?? "";
   const endDate = body.endDate?.trim() ?? "";
   const notes = body.notes?.trim() ?? "";
+  const reportType: GithubReportType =
+    body.reportType === "sprint-summary" ? "sprint-summary" : "onboarding";
 
   if (!repoFullName) {
     return NextResponse.json(
@@ -60,16 +67,21 @@ export async function POST(request: Request) {
       endDate,
     );
 
-    const summary = buildOnboardingMarkdown({
+    const reportInput = {
       endDate,
       notes,
       repoFullName,
       snapshot,
       startDate,
-    });
+    };
+    const summary =
+      reportType === "sprint-summary"
+        ? buildSprintSummaryMarkdown(reportInput)
+        : buildOnboardingMarkdown(reportInput);
 
     return NextResponse.json({
       generatedAt: new Date().toISOString(),
+      reportType,
       repoFullName,
       summary,
     });
