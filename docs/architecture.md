@@ -59,27 +59,6 @@ Use a TypeScript-first monorepo with a chat-first Next.js application.
 - markdown files for the personal write-up
 - `pptxgenjs` for `.pptx` slide generation
 
-## Rejected Alternatives
-
-### React + Flask
-
-This is a solid stack in general, but it adds extra overhead right now:
-
-- two runtimes to wire and deploy
-- duplicated validation and types
-- more friction around auth and job handling
-
-Python stays out of the core stack unless a later document-processing requirement makes it necessary.
-
-### Pure CLI
-
-This is attractive for developers, but it weakens your story for functional users and Microsoft integrations.
-
-The product direction is:
-
-- web app as the main product
-- CLI helper for repo scan and local dev workflows
-
 ## Interface
 
 Do not make this a plain chatbot.
