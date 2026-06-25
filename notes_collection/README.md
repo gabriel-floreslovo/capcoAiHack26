@@ -25,6 +25,12 @@ permissions during the demo.
 4. Run the collector from the repo root:
 
 ```powershell
+npm run collect:notes
+```
+
+Or run the PowerShell collector directly:
+
+```powershell
 powershell -ExecutionPolicy Bypass -File notes_collection\collect_local_notes.ps1
 ```
 

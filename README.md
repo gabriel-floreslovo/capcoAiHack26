@@ -31,11 +31,25 @@ An AI-native sprint wrap-up assistant that pulls evidence from work artifacts an
 - Generate markdown recap plus `.pptx`.
 - Add repo onboarding mode as a second workflow using the same evidence pipeline.
 
+## Notes Upload Demo
+
+For the hackathon path, add `.md`, `.txt`, `.vtt`, `.html`, or `.htm` files to
+`notes_collection/input/`, then run:
+
+```powershell
+npm run collect:notes
+```
+
+The collector writes normalized evidence to
+`notes_collection/output/normalized/artifacts.jsonl` and a starter markdown
+report to `notes_collection/output/report.md`.
+
 ## Next Step
 
-Scaffold `apps/web` as a Next.js app, then build the first end-to-end slice:
+Build the first end-to-end slice on top of the scaffolded Next.js app:
 
-1. Connect GitHub.
-2. Pull commits and PRs for a selected date range.
-3. Generate a markdown wrap-up.
-4. Add PowerPoint generation.
+1. Surface uploaded notes and transcripts in the evidence timeline.
+2. Connect GitHub.
+3. Pull commits and PRs for a selected date range.
+4. Generate a markdown wrap-up.
+5. Add PowerPoint generation.

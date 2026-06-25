@@ -9,6 +9,8 @@
   "scripts": {
     "dev": "npm run dev --workspace @sprint-wrap-up-buddy/web",
     "build": "npm run build --workspace @sprint-wrap-up-buddy/web",
-    "lint": "npm run lint --workspace @sprint-wrap-up-buddy/web"
+    "lint": "npm run lint --workspace @sprint-wrap-up-buddy/web",
+    "collect:notes": "powershell -ExecutionPolicy Bypass -File notes_collection/collect_local_notes.ps1",
+    "collect:notes:python": "python notes_collection/collect_local_notes.py"
   }
 }
