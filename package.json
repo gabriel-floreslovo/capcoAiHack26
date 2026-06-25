@@ -1,0 +1,10 @@
+{
+  "name": "sprint-wrap-up-buddy",
+  "private": true,
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "dev": "echo \"Scaffold apps/web and workers first\"",
+    "build": "echo \"No build configured yet\"",
+    "lint": "echo \"No lint configured yet\""
+  }
+}
