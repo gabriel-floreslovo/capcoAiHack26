@@ -40,6 +40,7 @@ export function GithubOnboardingDashboard({
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [loadingRepos, setLoadingRepos] = useState(true);
   const [generatingSummary, setGeneratingSummary] = useState(false);
+  const [generatingDeck, setGeneratingDeck] = useState(false);
 
   const summaryHeading = summary?.reportType === "sprint-summary"
     ? "Sprint summary preview"
@@ -149,6 +150,47 @@ export function GithubOnboardingDashboard({
     }.md`;
     anchor.click();
     URL.revokeObjectURL(url);
+  }
+
+  async function handleDownloadPptx() {
+    setSummaryError(null);
+    setGeneratingDeck(true);
+
+    try {
+      const response = await fetch("/api/github/sprint-summary-pptx", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          endDate,
+          notes,
+          repoFullName: effectiveRepo,
+          startDate,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Unable to generate PowerPoint artifact.");
+      }
+
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${effectiveRepo.replace("/", "-")}-sprint-summary.pptx`;
+      anchor.click();
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      setSummaryError(
+        error instanceof Error
+          ? error.message
+          : "Unable to generate PowerPoint artifact.",
+      );
+    } finally {
+      setGeneratingDeck(false);
+    }
   }
 
   return (
@@ -273,6 +315,7 @@ export function GithubOnboardingDashboard({
               className="w-full rounded-full border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-900 transition hover:border-slate-900 disabled:cursor-not-allowed disabled:border-slate-200 disabled:text-slate-400"
               disabled={
                 generatingSummary ||
+                generatingDeck ||
                 loadingRepos ||
                 effectiveRepo.trim().length === 0 ||
                 startDate.length === 0 ||
@@ -284,6 +327,22 @@ export function GithubOnboardingDashboard({
               {generatingSummary ? "Generating report..." : "Generate sprint summary"}
             </button>
           </div>
+
+          <button
+            className="w-full rounded-full bg-orange-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:bg-orange-300"
+            disabled={
+              generatingSummary ||
+              generatingDeck ||
+              loadingRepos ||
+              effectiveRepo.trim().length === 0 ||
+              startDate.length === 0 ||
+              endDate.length === 0
+            }
+            onClick={() => void handleDownloadPptx()}
+            type="button"
+          >
+            {generatingDeck ? "Generating PowerPoint..." : "Download sprint summary deck (.pptx)"}
+          </button>
         </div>
       </div>
 
