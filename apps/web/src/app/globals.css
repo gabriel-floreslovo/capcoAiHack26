@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f4efe5;
-  --foreground: #1f2937;
+  --background: #eef3ef;
+  --foreground: #0f172a;
 }
 
 @theme inline {
@@ -16,19 +16,25 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #111827;
-    --foreground: #f9fafb;
+    --background: #050806;
+    --foreground: #f5f7f5;
   }
 }
 
 html {
   background:
-    radial-gradient(circle at top, rgba(244, 114, 22, 0.18), transparent 28%),
-    linear-gradient(180deg, rgba(255, 255, 255, 0.75), rgba(244, 239, 229, 0.9));
+    radial-gradient(circle at 20% 20%, rgba(34, 197, 94, 0.16), transparent 26%),
+    radial-gradient(circle at 80% 0%, rgba(74, 222, 128, 0.14), transparent 22%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.78), rgba(238, 243, 239, 0.95));
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+code,
+pre {
+  font-family: var(--font-mono);
 }

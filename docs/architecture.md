@@ -143,6 +143,7 @@ Keep each version tight, but build on foundations that can support a durable pro
 - VS Code extension
 - semantic search over prior sprints
 - personalized tone profiles per user
+- optional free-inference mode for code-reading insights when the user wants broader, less conservative synthesis
 
 ## Monorepo Shape
 
