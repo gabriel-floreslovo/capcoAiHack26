@@ -18,6 +18,30 @@ type ParsedNotesContext = {
   nextSteps: string[];
 };
 
+export type SprintReportModel = {
+  accomplishments: string[];
+  decisions: string[];
+  forwardLook: string[];
+  functionalImpact: string[];
+  functionalThemes: string[];
+  generatedSummary: string;
+  repoAreasTouched: {
+    directories: string[];
+    files: string[];
+  };
+  reportTitle: string;
+  risksAndBlockers: string[];
+  scope: {
+    defaultBranch: string;
+    endDate: string;
+    repoFullName: string;
+    repoUrl: string;
+    startDate: string;
+    topLanguages: string[];
+  };
+  stakeholderHighlights: string[];
+};
+
 function inferArchitectureSignals(snapshot: GithubRepoSnapshot) {
   const names = new Set(snapshot.rootEntries);
   const tree = new Set(snapshot.treePaths);
@@ -329,30 +353,6 @@ function inferFunctionalImpact(
   return impact;
 }
 
-function inferDecisionSummary(notesContext: ParsedNotesContext) {
-  if (notesContext.decisions.length > 0) {
-    return notesContext.decisions.map((decision) => `- ${decision}`).join("\n");
-  }
-
-  return "- No explicit sprint decisions were detected from the provided notes.";
-}
-
-function inferBlockersSummary(notesContext: ParsedNotesContext) {
-  if (notesContext.blockers.length > 0) {
-    return notesContext.blockers.map((blocker) => `- ${blocker}`).join("\n");
-  }
-
-  return "- No blockers or delivery risks were called out in the provided notes.";
-}
-
-function inferFunctionalThemeSummary(notesContext: ParsedNotesContext) {
-  if (notesContext.functionalThemes.length > 0) {
-    return notesContext.functionalThemes.map((theme) => `- ${theme}`).join("\n");
-  }
-
-  return "- No explicit functional or stakeholder-oriented themes were detected from the notes.";
-}
-
 function inferSuggestedDemoHighlights(
   snapshot: GithubRepoSnapshot,
   notesContext: ParsedNotesContext,
@@ -382,6 +382,85 @@ function inferSuggestedDemoHighlights(
   }
 
   return highlights;
+}
+
+function inferAccomplishmentSummary(
+  snapshot: GithubRepoSnapshot,
+  notesContext: ParsedNotesContext,
+) {
+  if (notesContext.accomplishments.length > 0) {
+    return notesContext.accomplishments;
+  }
+
+  if (snapshot.pullRequests.length > 0) {
+    return snapshot.pullRequests
+      .slice(0, 3)
+      .map((pullRequest) => pullRequest.title);
+  }
+
+  if (snapshot.commits.length > 0) {
+    return snapshot.commits.slice(0, 3).map((commit) => commit.message);
+  }
+
+  return [
+    "The available sprint evidence shows repository activity, but the top accomplishments should be clarified with more notes or supporting artifacts.",
+  ];
+}
+
+function stripMarkdownBullets(value: string) {
+  return value.replace(/^- /, "").trim();
+}
+
+export function buildSprintReportModel(input: ReportInput): SprintReportModel {
+  const { endDate, notes, repoFullName, snapshot, startDate } = input;
+  const notesContext = parseNotesContext(notes);
+  const highlights = inferSprintHighlights(snapshot, notesContext);
+  const functionalImpact = inferFunctionalImpact(snapshot, notesContext);
+  const forwardLook = inferForwardLook(snapshot, notes);
+  const demoHighlights = inferSuggestedDemoHighlights(snapshot, notesContext);
+  const accomplishments = inferAccomplishmentSummary(snapshot, notesContext);
+  const decisions =
+    notesContext.decisions.length > 0
+      ? notesContext.decisions
+      : snapshot.pullRequests.length > 0
+        ? snapshot.pullRequests.slice(0, 3).map((pullRequest) => pullRequest.title)
+        : ["No explicit sprint decisions were detected from the provided notes."];
+  const risksAndBlockers =
+    notesContext.blockers.length > 0
+      ? notesContext.blockers
+      : [
+          "No blockers or delivery risks were called out in the provided notes.",
+        ];
+  const functionalThemes =
+    notesContext.functionalThemes.length > 0
+      ? notesContext.functionalThemes
+      : [
+          "No explicit functional or stakeholder-oriented themes were detected from the notes.",
+        ];
+
+  return {
+    accomplishments,
+    decisions,
+    forwardLook,
+    functionalImpact,
+    functionalThemes,
+    generatedSummary: highlights.map(stripMarkdownBullets).join(" "),
+    repoAreasTouched: {
+      directories: snapshot.topLevelDirectories,
+      files: snapshot.topLevelFiles,
+    },
+    reportTitle: `${repoFullName} sprint change summary`,
+    risksAndBlockers,
+    scope: {
+      defaultBranch: snapshot.defaultBranch,
+      endDate,
+      repoFullName,
+      repoUrl: snapshot.repoUrl,
+      startDate,
+      topLanguages: snapshot.languages,
+    },
+    stakeholderHighlights: demoHighlights,
+  };
 }
 
 export function buildOnboardingMarkdown(input: ReportInput) {
@@ -439,37 +518,46 @@ ${onboardingChecklist.map((item) => `- ${item}`).join("\n")}
 }
 
 export function buildSprintSummaryMarkdown(input: ReportInput) {
-  const { endDate, notes, repoFullName, snapshot, startDate } = input;
-  const notesContext = parseNotesContext(notes);
-  const highlights = inferSprintHighlights(snapshot, notesContext);
-  const functionalImpact = inferFunctionalImpact(snapshot, notesContext);
-  const forwardLook = inferForwardLook(snapshot, notes);
-  const demoHighlights = inferSuggestedDemoHighlights(snapshot, notesContext);
+  const sprintReport = buildSprintReportModel(input);
+  const {
+    accomplishments,
+    decisions,
+    forwardLook,
+    functionalImpact,
+    functionalThemes,
+    repoAreasTouched,
+    risksAndBlockers,
+    scope,
+    stakeholderHighlights,
+  } = sprintReport;
+  const { repoFullName, repoUrl, startDate, endDate, defaultBranch, topLanguages } =
+    scope;
+  const { snapshot } = input;
 
   return `# ${repoFullName} sprint change summary
 
 ## Scope
-- Repository: [${repoFullName}](${snapshot.repoUrl})
+- Repository: [${repoFullName}](${repoUrl})
 - Sprint window: ${startDate} to ${endDate}
-- Default branch: \`${snapshot.defaultBranch}\`
+- Default branch: \`${defaultBranch}\`
 - Top languages: ${
-    snapshot.languages.length > 0 ? snapshot.languages.join(", ") : "Not returned"
+    topLanguages.length > 0 ? topLanguages.join(", ") : "Not returned"
   }
 
 ## What changed this sprint
-${highlights.map((highlight) => `- ${highlight}`).join("\n")}
+${accomplishments.map((item) => `- ${item}`).join("\n")}
 
 ## Functional themes and stakeholder context
-${inferFunctionalThemeSummary(notesContext)}
+${functionalThemes.map((theme) => `- ${theme}`).join("\n")}
 
 ## Why this work matters
 ${functionalImpact.map((item) => `- ${item}`).join("\n")}
 
 ## Decisions captured during the sprint
-${inferDecisionSummary(notesContext)}
+${decisions.map((item) => `- ${item}`).join("\n")}
 
 ## Risks and blockers
-${inferBlockersSummary(notesContext)}
+${risksAndBlockers.map((item) => `- ${item}`).join("\n")}
 
 ## Pull requests in scope
 ${formatPullRequests(snapshot)}
@@ -479,18 +567,18 @@ ${formatCommits(snapshot)}
 
 ## Repo areas touched
 - Directories: ${
-    snapshot.topLevelDirectories.length > 0
-      ? snapshot.topLevelDirectories.join(", ")
+    repoAreasTouched.directories.length > 0
+      ? repoAreasTouched.directories.join(", ")
       : "None returned"
   }
 - Files: ${
-    snapshot.topLevelFiles.length > 0
-      ? snapshot.topLevelFiles.join(", ")
+    repoAreasTouched.files.length > 0
+      ? repoAreasTouched.files.join(", ")
       : "None returned"
   }
 
 ## Demo or stakeholder-ready highlights
-${demoHighlights.map((item) => `- ${item}`).join("\n")}
+${stakeholderHighlights.map((item) => `- ${item}`).join("\n")}
 
 ## Forward look
 ${forwardLook.map((item) => `- ${item}`).join("\n")}

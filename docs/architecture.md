@@ -20,6 +20,7 @@ Use a TypeScript-first monorepo with a chat-first Next.js application.
 - GitHub, Microsoft Graph, local file parsing, and PowerPoint generation all have workable Node tooling.
 - Browser-based auth is much easier for GitHub and Microsoft than a CLI-first experience.
 - Functional users can use it without touching a terminal, while developers can still get a repo scan mode later.
+- The product now optimizes for robustness and extensibility over hackathon-only speed.
 
 ## Stack
 
@@ -123,9 +124,9 @@ This gives you one timeline and one retrieval surface regardless of source.
    - onboarding markdown
    - chat Q&A over indexed repo context
 
-## MVP Scope for the Hackathon
+## MVP Scope
 
-Keep the first version tight.
+Keep each version tight, but build on foundations that can support a durable product.
 
 ### Must-have
 
@@ -136,7 +137,7 @@ Keep the first version tight.
 - PowerPoint generation
 - repo onboarding document generation
 
-### Phase Two
+### Later Expansion
 
 - SharePoint and OneNote
 - VS Code extension
@@ -165,6 +166,17 @@ workers/
 5. Add PowerPoint generation.
 6. Add Teams transcript or note ingestion.
 7. Add repo onboarding flow.
+
+## Product Direction
+
+The project is no longer constrained by hackathon presentation needs.
+
+That means:
+
+- prefer durable domain models over one-off demo shortcuts
+- keep artifact generation paths consistent across markdown, slides, and chat
+- preserve evidence traceability so outputs can be trusted and audited
+- build each MVP slice so it can remain part of a long-term product
 
 ## Key Product Principle
 
